@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#04060d">
+<title>Тест по физике · 1 курс · Сложение сил и кинематика</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Rubik:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ============ БАЗА ============ */
+:root{
+  --bg0:#04060d; --panel:#0b1222; --panel2:#0e1730;
+  --cyan:#00e5ff; --mag:#ff2ec4; --amber:#ffb454; --green:#59ffa8; --red:#ff5470;
+  --ink:#e8f2ff; --muted:#8fa3c8; --line:rgba(0,229,255,.16);
+  --fd:'Unbounded',system-ui,sans-serif; --fb:'Rubik',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--fb); background:var(--bg0); color:var(--ink);
+  min-height:100vh; min-height:100svh; overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;touch-action:manipulation}
+::selection{background:rgba(0,229,255,.35)}
+
+/* ============ ФОН: сетка + свечения + искры ============ */
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+   radial-gradient(560px 380px at 88% -8%, rgba(255,46,196,.10), transparent 62%),
+   radial-gradient(680px 460px at -12% 108%, rgba(0,229,255,.11), transparent 62%),
+   radial-gradient(420px 300px at 108% 58%, rgba(255,180,84,.06), transparent 60%);
+}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+   linear-gradient(rgba(0,229,255,.05) 1px,transparent 1px),
+   linear-gradient(90deg,rgba(0,229,255,.05) 1px,transparent 1px);
+  background-size:28px 28px;
+  -webkit-mask-image:radial-gradient(ellipse at 50% 18%, #000 25%, transparent 78%);
+  mask-image:radial-gradient(ellipse at 50% 18%, #000 25%, transparent 78%);
+}
+.spark{position:fixed;width:4px;height:4px;border-radius:50%;z-index:0;pointer-events:none;
+  background:var(--cyan);box-shadow:0 0 12px 2px var(--cyan);opacity:.55;
+  animation:drift 11s ease-in-out infinite alternate}
+.s2{background:var(--mag);box-shadow:0 0 12px 2px var(--mag);animation-duration:14s;animation-delay:-3s}
+.s3{background:var(--amber);box-shadow:0 0 10px 2px var(--amber);animation-duration:9s;animation-delay:-5s}
+.s4{animation-duration:16s;animation-delay:-7s}
+.s5{background:var(--mag);box-shadow:0 0 10px 2px var(--mag);animation-duration:12s;animation-delay:-2s}
+@keyframes drift{from{transform:translate(0,0);opacity:.25}to{transform:translate(26px,-40px);opacity:.7}}
+
+/* ============ КАРКАС ============ */
+.wrap{position:relative;z-index:1;max-width:660px;margin:0 auto;
+  padding:calc(14px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+.screen{display:none}
+.screen.on{display:block;animation:scrIn .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes scrIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+.panel{background:linear-gradient(180deg, rgba(14,23,48,.94), rgba(9,14,28,.96));
+  border:1px solid var(--line); border-radius:18px;
+  box-shadow:0 18px 50px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.04);
+  padding:22px 20px}
+.rib{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.rib::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+
+h1{font-family:var(--fd);font-weight:800;font-size:clamp(1.35rem,5.4vw,1.9rem);line-height:1.22;letter-spacing:.01em}
+h1 .acc{color:var(--cyan);text-shadow:0 0 18px rgba(0,229,255,.55)}
+.sub{color:var(--muted);font-size:14px;margin-top:8px;line-height:1.5}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+.chip{font-size:11.5px;letter-spacing:.06em;padding:5px 11px;border-radius:999px;
+  border:1px solid var(--line);color:#bfe9ff;background:rgba(0,229,255,.05)}
+.chip.m{border-color:rgba(255,46,196,.3);color:#ffd2f0;background:rgba(255,46,196,.06)}
+
+/* ============ УЧИТЕЛЬ ============ */
+.tch{display:flex;align-items:center;gap:12px;margin:18px 0 4px;padding:12px 14px;
+  border:1px solid rgba(255,180,84,.22);border-radius:14px;background:rgba(255,180,84,.05)}
+.tch .ava{width:44px;height:44px;flex:none;border-radius:12px;display:grid;place-items:center;
+  font-family:var(--fd);font-weight:800;font-size:15px;color:#04121a;
+  background:linear-gradient(135deg,var(--cyan),#59ffd0);box-shadow:0 0 16px rgba(0,229,255,.45)}
+.tch b{display:block;font-size:14.5px}
+.tch span{font-size:12px;color:var(--amber);letter-spacing:.08em;text-transform:uppercase}
+
+/* ============ HERO-СХЕМА (сложение сил) ============ */
+.hero{width:100%;display:block;margin:14px 0 4px;border:1px solid var(--line);border-radius:14px;
+  background:rgba(4,8,16,.55)}
+.hero .gl{stroke:rgba(0,229,255,.10)}
+.hero .tick{fill:#8fa3c8;font:10.5px var(--fb)}
+.hero .axl{fill:#dfe9ff;font:600 12px var(--fb);font-style:italic}
+.hero .vl{font:600 12.5px var(--fb)}
+.hv{stroke-dasharray:100;stroke-dashoffset:100;animation:drawV 5.6s ease-in-out infinite}
+.hv2{animation-delay:.7s}.hv3{animation-delay:1.4s}
+@keyframes drawV{0%{stroke-dashoffset:100}26%{stroke-dashoffset:0}86%{stroke-dashoffset:0}100%{stroke-dashoffset:0}}
+.hlab{opacity:0;animation:labIn 5.6s ease-in-out infinite}
+.hl2{animation-delay:.7s}.hl3{animation-delay:1.4s}
+@keyframes labIn{0%,20%{opacity:0}34%,86%{opacity:1}100%{opacity:0}}
+
+/* ============ ФОРМЫ ============ */
+.fld{margin-top:16px}
+.fld label{display:block;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.inp,select.inp{width:100%;font:500 16px var(--fb);color:var(--ink);background:#0a1122;
+  border:1px solid rgba(143,163,200,.25);border-radius:12px;padding:13px 14px;transition:.22s;outline:none}
+.inp:focus{border-color:var(--cyan);box-shadow:0 0 16px rgba(0,229,255,.28)}
+select.inp{appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2300e5ff' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
+.ferr{display:none;color:var(--red);font-size:12.5px;margin-top:7px}
+.ferr.on{display:block;animation:scrIn .3s}
+.att-note{margin-top:14px;font-size:12.5px;color:var(--muted)}
+.att-note b{color:var(--amber)}
+
+/* ============ КНОПКИ ============ */
+.btn{display:block;width:100%;margin-top:20px;padding:15px 22px;cursor:pointer;
+  font-family:var(--fd);font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink);background:linear-gradient(180deg,#0d1830,#0a1122);
+  border:1px solid var(--line);border-radius:13px;transition:.25s}
+.btn:hover:not([disabled]){transform:translateY(-1px);border-color:rgba(0,229,255,.4)}
+.btn[disabled]{opacity:.32;cursor:not-allowed}
+.btn.ready{border-color:var(--cyan);color:#eaffff;
+  box-shadow:0 0 20px rgba(0,229,255,.4), inset 0 0 14px rgba(0,229,255,.10);
+  animation:btnPulse 1.7s ease-in-out infinite}
+.btn.ready:hover{box-shadow:0 0 30px rgba(0,229,255,.6), inset 0 0 18px rgba(0,229,255,.15)}
+@keyframes btnPulse{0%,100%{box-shadow:0 0 14px rgba(0,229,255,.35), inset 0 0 12px rgba(0,229,255,.08)}
+  50%{box-shadow:0 0 28px rgba(0,229,255,.6), inset 0 0 18px rgba(0,229,255,.16)}}
+
+/* ============ ДИСКЛЕЙМЕР ============ */
+.rules-list{list-style:none;margin:14px 0 4px}
+.rules-list li{position:relative;padding:8px 0 8px 22px;font-size:14px;line-height:1.5;color:#c9d8f2;
+  border-bottom:1px dashed rgba(143,163,200,.14)}
+.rules-list li::before{content:'▸';position:absolute;left:2px;color:var(--cyan);text-shadow:0 0 8px rgba(0,229,255,.7)}
+.rules-list li b{color:var(--ink)}
+.chk{display:flex;gap:11px;align-items:flex-start;cursor:pointer;margin-top:18px;font-size:13.5px;line-height:1.5;color:var(--muted)}
+.chk input{display:none}
+.chk .box{width:21px;height:21px;flex:none;margin-top:1px;border:1px solid rgba(143,163,200,.35);border-radius:6px;
+  display:grid;place-items:center;transition:.2s;background:#0a1122}
+.chk input:checked + .box{background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 14px rgba(0,229,255,.55)}
+.chk input:checked + .box::after{content:'✓';color:#04121a;font-weight:800;font-size:13px}
+.chk input:checked ~ span{color:var(--ink)}
+
+/* ============ ЭКРАН ТЕСТА ============ */
+.qtop{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.qcount{font-family:var(--fd);color:var(--muted);font-size:13px;letter-spacing:.06em}
+.qcount b{font-size:24px;color:var(--cyan);text-shadow:0 0 14px rgba(0,229,255,.6);margin-right:2px}
+.qmeta{margin-left:auto;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  border:1px solid rgba(143,163,200,.2);padding:5px 10px;border-radius:999px}
+.timer{position:relative;width:56px;height:56px;flex:none}
+.timer svg{width:100%;height:100%}
+.tr-bg{fill:none;stroke:rgba(143,163,200,.16);stroke-width:4.5}
+.tr-fg{fill:none;stroke:var(--cyan);stroke-width:4.5;stroke-linecap:round;
+  transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset .2s linear, stroke .3s}
+.timer span{position:absolute;inset:0;display:grid;place-items:center;
+  font-family:var(--fd);font-size:13.5px;color:var(--ink)}
+.timer.warn .tr-fg{stroke:var(--amber)}
+.timer.danger .tr-fg{stroke:var(--red)}
+.timer.danger{animation:tpulse .75s ease-in-out infinite}
+.timer.danger span{color:var(--red)}
+@keyframes tpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+
+.cells{display:flex;gap:5px;margin-bottom:14px}
+.cell{flex:1;height:6px;border-radius:3px;background:rgba(143,163,200,.14);transition:.3s}
+.cell.done{background:var(--cyan);box-shadow:0 0 9px rgba(0,229,255,.6)}
+.cell.cur{background:rgba(0,229,255,.32);animation:cellPulse 1.15s ease-in-out infinite}
+@keyframes cellPulse{0%,100%{opacity:.5}50%{opacity:1}}
+
+.qcard.in{animation:cardIn .42s cubic-bezier(.2,.8,.25,1)}
+@keyframes cardIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.qtags{display:flex;gap:8px;margin-bottom:12px}
+.tag{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;padding:5px 11px;border-radius:999px;
+  color:var(--cyan);border:1px solid rgba(0,229,255,.35);background:rgba(0,229,255,.06)}
+.tag.t2{color:var(--muted);border-color:rgba(143,163,200,.25);background:transparent}
+.qtext{font-size:16.5px;font-weight:500;line-height:1.55}
+.qtext i, .opt .txt i{font-style:italic;color:#a8e9ff}
+.qsvgbox{margin:14px 0 2px;display:flex;justify-content:center}
+.qsvg{width:100%;max-width:370px;height:auto;display:block;border:1px solid rgba(0,229,255,.13);
+  border-radius:12px;background:rgba(4,8,16,.5)}
+.qsvg .gl{stroke:rgba(0,229,255,.10)}
+.qsvg .tick{fill:#8fa3c8;font:10.5px var(--fb)}
+.qsvg .axl{fill:#dfe9ff;font:600 12px var(--fb);font-style:italic}
+.qsvg .vl{font:600 12.5px var(--fb)}
+.qsvg .dim{fill:#7387ad;font:11px var(--fb)}
+
+.opts{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.opt{display:flex;gap:12px;align-items:center;width:100%;text-align:left;cursor:pointer;
+  padding:13px 14px;border:1px solid rgba(143,163,200,.18);border-radius:12px;
+  background:rgba(11,18,34,.72);color:var(--ink);transition:.2s;animation:optIn .38s both}
+.opt:nth-child(2){animation-delay:.05s}.opt:nth-child(3){animation-delay:.1s}.opt:nth-child(4){animation-delay:.15s}
+@keyframes optIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+.opt:hover{border-color:rgba(0,229,255,.45);transform:translateY(-1px)}
+.opt .key{width:30px;height:30px;flex:none;border-radius:9px;display:grid;place-items:center;
+  border:1px solid rgba(143,163,200,.3);font-family:var(--fd);font-size:12.5px;color:var(--muted);transition:.2s}
+.opt .txt{font-size:15px;line-height:1.45}
+.opt.sel{border-color:var(--cyan);
+  box-shadow:0 0 16px rgba(0,229,255,.4), 0 0 2px rgba(0,229,255,.9), inset 0 0 16px rgba(0,229,255,.07)}
+.opt.sel .key{background:var(--cyan);border-color:var(--cyan);color:#03121a;box-shadow:0 0 12px rgba(0,229,255,.8)}
+
+.alab{display:block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:16px 0 9px}
+.numwrap{display:flex;align-items:center;gap:12px}
+.num-input{font:600 20px var(--fb);letter-spacing:.05em;color:var(--cyan);background:#0a1122;
+  border:1px solid rgba(143,163,200,.28);border-radius:12px;padding:13px 15px;width:170px;outline:none;transition:.22s}
+.num-input:focus{border-color:var(--cyan);box-shadow:0 0 16px rgba(0,229,255,.32)}
+.unit-note{font-size:12.5px;color:var(--muted)}
+
+/* ============ ОВЕРЛЕИ ============ */
+#toast{position:fixed;top:calc(14px + env(safe-area-inset-top));left:50%;transform:translate(-50%,-160%);
+  z-index:60;padding:10px 20px;border-radius:999px;font-size:13.5px;letter-spacing:.06em;
+  background:#0c1428;border:1px solid var(--amber);color:var(--amber);
+  box-shadow:0 0 20px rgba(255,180,84,.35);transition:transform .35s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+#toast.on{transform:translate(-50%,0)}
+
+#warn{position:fixed;inset:0;z-index:70;display:none;place-items:center;padding:20px;
+  background:rgba(3,6,13,.82);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px)}
+#warn.on{display:grid}
+.warn-card{max-width:420px;width:100%;border-radius:18px;padding:26px 22px;text-align:center;
+  background:linear-gradient(180deg,#161024,#0c0a18);border:1px solid var(--amber);
+  box-shadow:0 0 34px rgba(255,180,84,.3);animation:shake .55s}
+@keyframes shake{0%,100%{transform:translateX(0)}18%{transform:translateX(-9px)}38%{transform:translateX(9px)}
+  58%{transform:translateX(-6px)}78%{transform:translateX(6px)}}
+.warn-card .ic{font-size:38px;display:block;margin-bottom:10px;filter:drop-shadow(0 0 12px rgba(255,180,84,.8))}
+.warn-card h3{font-family:var(--fd);font-size:16px;color:var(--amber);letter-spacing:.08em;margin-bottom:10px}
+.warn-card p{font-size:14px;line-height:1.55;color:#e6d9c2}
+.warn-card .btn{border-color:var(--amber)}
+.warn-card .btn.ready{box-shadow:0 0 20px rgba(255,180,84,.4), inset 0 0 12px rgba(255,180,84,.1)}
+
+/* ============ РЕЗУЛЬТАТЫ ============ */
+.res-h{font-family:var(--fd);font-weight:800;font-size:clamp(1.2rem,5vw,1.6rem);margin-bottom:6px}
+.ring-wrap{position:relative;width:150px;margin:18px auto 8px}
+.ring-wrap svg{width:100%;transform:rotate(-90deg)}
+.rg-bg{fill:none;stroke:rgba(143,163,200,.14);stroke-width:9}
+.rg-fg{fill:none;stroke:var(--cyan);stroke-width:9;stroke-linecap:round;
+  filter:drop-shadow(0 0 8px rgba(0,229,255,.7));transition:stroke-dashoffset 1.3s cubic-bezier(.3,.7,.3,1)}
+.ring-num{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.ring-num b{font-family:var(--fd);font-size:40px;color:var(--cyan);text-shadow:0 0 20px rgba(0,229,255,.6)}
+.ring-num small{display:block;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.res-status{margin:10px auto 18px;max-width:430px;padding:10px 14px;border-radius:11px;font-size:13.5px;text-align:center}
+.res-status.ok{border:1px solid rgba(89,255,168,.35);color:var(--green);background:rgba(89,255,168,.06)}
+.res-status.bad{border:1px solid rgba(255,84,112,.4);color:var(--red);background:rgba(255,84,112,.07)}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.res-grid > div{border:1px solid rgba(143,163,200,.16);border-radius:12px;padding:11px 13px;background:rgba(10,17,34,.6)}
+.res-grid b{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.res-grid span{font-size:14.5px;font-weight:600}
+.dots{display:flex;gap:7px;justify-content:center;margin:18px 0 6px}
+.dot{width:15px;height:15px;border-radius:5px;background:rgba(143,163,200,.18)}
+.dot.ok{background:var(--green);box-shadow:0 0 9px rgba(89,255,168,.65)}
+.dot.bad{background:var(--red);box-shadow:0 0 9px rgba(255,84,112,.55)}
+.dots-lab{text-align:center;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.sheet-note{text-align:center;font-size:12.5px;color:var(--muted);margin-top:16px}
+.sheet-note.ok{color:var(--green)} .sheet-note.wn{color:var(--amber)}
+
+@media(min-width:880px){
+  .start-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:start}
+}
+@media(max-width:380px){
+  .qmeta{display:none}
+  .panel{padding:18px 15px}
+}
+</style>
+</head>
+<body>
+
+<i class="spark s1" style="top:12%;left:8%"></i>
+<i class="spark s2" style="top:28%;right:6%"></i>
+<i class="spark s3" style="top:64%;left:5%"></i>
+<i class="spark s4" style="bottom:14%;right:10%"></i>
+<i class="spark s5" style="top:48%;left:52%"></i>
+
+<div id="toast"></div>
+
+<main class="wrap">
+
+  <!-- ═══════════ ЭКРАН 1 · СТАРТ ═══════════ -->
+  <section class="screen on" id="scr-start">
+    <div class="rib"><span>Физика · 1 курс колледжа</span></div>
+    <div class="panel">
+      <div class="start-grid">
+        <div>
+          <h1>Сложение сил.<br><span class="acc">Кинематика</span> движения</h1>
+          <p class="sub">Итоговый тест: равнодействующая сил, кинематические уравнения, графики движения, свободное падение и движение по вертикали.</p>
+          <div class="chips">
+            <span class="chip">6 тестовых</span>
+            <span class="chip m">4 расчётные</span>
+            <span class="chip">90 с / вопрос</span>
+          </div>
+
+          <svg viewBox="0 0 320 178" class="hero" role="img" aria-label="Сложение двух сил под прямым углом">
+            <defs>
+              <marker id="ha1" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#00e5ff"/></marker>
+              <marker id="ha2" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#ff2ec4"/></marker>
+              <marker id="ha3" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#ffb454"/></marker>
+            </defs>
+            <g>
+              <line x1="46" y1="22"  x2="300" y2="22"  class="gl"/><line x1="46" y1="54"  x2="300" y2="54"  class="gl"/>
+              <line x1="46" y1="86"  x2="300" y2="86"  class="gl"/><line x1="46" y1="118" x2="300" y2="118" class="gl"/>
+              <line x1="110" y1="14" x2="110" y2="150" class="gl"/><line x1="174" y1="14" x2="174" y2="150" class="gl"/>
+              <line x1="238" y1="14" x2="238" y2="150" class="gl"/>
+              <line x1="36" y1="150" x2="304" y2="150" stroke="#6f83ad" stroke-width="1.4"/>
+              <line x1="46" y1="160" x2="46"  y2="10"  stroke="#6f83ad" stroke-width="1.4"/>
+              <line class="hv" pathLength="100" x1="46" y1="150" x2="238" y2="150" stroke="#00e5ff" stroke-width="3" marker-end="url(#ha1)"/>
+              <line class="hv hv2" pathLength="100" x1="46" y1="150" x2="46" y2="54" stroke="#ff2ec4" stroke-width="3" marker-end="url(#ha2)"/>
+              <line class="hv hv3" pathLength="100" x1="46" y1="150" x2="238" y2="54" stroke="#ffb454" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#ha3)"/>
+              <text class="vl hlab" x="150" y="141" fill="#00e5ff">F₁</text>
+              <text class="vl hlab hl2" x="56" y="100" fill="#ff2ec4">F₂</text>
+              <text class="vl hlab hl3" x="160" y="90" fill="#ffb454">F — ?</text>
+              <text class="axl" x="296" y="167" text-anchor="end" font-size="11">F² = F₁² + F₂²</text>
+            </g>
+          </svg>
+        </div>
+
+        <div>
+          <div class="tch">
+            <div class="ava">КД</div>
+            <div><span>Учитель физики</span><b>Кунгозин Даулет Багдашұлы</b></div>
+          </div>
+
+          <div class="fld">
+            <label for="fio">ФИ учащегося</label>
+            <input class="inp" id="fio" type="text" autocomplete="off" autocorrect="off" placeholder="Введите ФИ">
+            <div class="ferr" id="fioErr">Введите фамилию и имя (минимум 3 буквы)</div>
+          </div>
+          <div class="fld">
+            <label for="group">Группа</label>
+            <select class="inp" id="group">
+              <option value="Т-116">Т-116</option>
+              <option value="ПМЛ-116">ПМЛ-116</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label for="variant">Вариант</label>
+            <select class="inp" id="variant">
+              <option value="1">Вариант 1</option>
+              <option value="2">Вариант 2</option>
+            </select>
+          </div>
+
+          <p class="att-note" id="attStart">Использовано попыток: <b>0</b></p>
+          <button class="btn ready" id="toRules" type="button">Продолжить →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ ЭКРАН 2 · ДИСКЛЕЙМЕР ═══════════ -->
+  <section class="screen" id="scr-rules">
+    <div class="rib"><span>Дисклеймер · правила</span></div>
+    <div class="panel">
+      <h2 class="res-h">Правила прохождения теста</h2>
+      <div class="chips" id="rulesChips"></div>
+      <ul class="rules-list">
+        <li><b>10 вопросов:</b> 6 тестовых (один правильный ответ) и 4 расчётные задачи. За каждый вопрос — <b>1 балл</b>, максимум <b>10</b>.</li>
+        <li>На каждый вопрос — <b>1 минута 30 секунд</b>. По истечении таймера тест автоматически переходит к следующему вопросу.</li>
+        <li>Вернуться к предыдущим вопросам <b>нельзя</b>. Правильные и неправильные ответы во время теста <b>не показываются</b>.</li>
+        <li>В расчётных задачах принимайте <b>g = 10 м/с²</b>. В ответ записывайте <b>только число, без единиц измерения</b>.</li>
+        <li><b>Академическая честность:</b> выполняйте работу самостоятельно, без подсказок, других приложений и вкладок. Бегущих шпаргалок с формулами в тесте нет и не будет.</li>
+        <li><b>Античит:</b> при сворачивании окна / переключении приложений — <b>первый раз предупреждение</b>, <b>второй раз тест завершается автоматически</b>. Выдвижение цифровой клавиатуры в задачах нарушением не считается.</li>
+        <li>Каждое прохождение считается попыткой. <span id="rulesAtt"></span></li>
+      </ul>
+      <label class="chk">
+        <input type="checkbox" id="agree">
+        <span class="box"></span>
+        <span>Я ознакомлен(а) с правилами и обязуюсь соблюдать принципы академической честности</span>
+      </label>
+      <button class="btn" id="startQuiz" type="button" disabled>Начать тест ▶</button>
+    </div>
+  </section>
+
+  <!-- ═══════════ ЭКРАН 3 · ТЕСТ ═══════════ -->
+  <section class="screen" id="scr-quiz">
+    <header class="qtop">
+      <div class="qcount"><b id="qNow">1</b>/ 10</div>
+      <div class="qmeta" id="qMeta">Вариант 1</div>
+      <div class="timer" id="tBox">
+        <svg viewBox="0 0 60 60">
+          <circle class="tr-bg" cx="30" cy="30" r="26"></circle>
+          <circle class="tr-fg" id="trFg" cx="30" cy="30" r="26" stroke-dasharray="163.4" stroke-dashoffset="0"></circle>
+        </svg>
+        <span id="trNum">90</span>
+      </div>
+    </header>
+    <div class="cells" id="cells"></div>
+    <article class="panel qcard" id="qCard">
+      <div class="qtags"><span class="tag" id="qTag">Тест</span><span class="tag t2">1 балл</span></div>
+      <h2 class="qtext" id="qText"></h2>
+      <div class="qsvgbox" id="qSvg"></div>
+      <div id="qBody"></div>
+    </article>
+    <button class="btn" id="nextBtn" type="button" disabled>Далее</button>
+  </section>
+
+  <!-- ═══════════ ЭКРАН 4 · РЕЗУЛЬТАТЫ ═══════════ -->
+  <section class="screen" id="scr-res">
+    <div class="rib"><span>Итоги тестирования</span></div>
+    <div class="panel">
+      <h2 class="res-h">Ваш результат</h2>
+      <div class="ring-wrap">
+        <svg viewBox="0 0 120 120">
+          <circle class="rg-bg" cx="60" cy="60" r="54"></circle>
+          <circle class="rg-fg" id="rgFg" cx="60" cy="60" r="54" stroke-dasharray="339.3" stroke-dashoffset="339.3"></circle>
+        </svg>
+        <div class="ring-num"><div><b id="scoreNum">0</b><small>из 10 баллов</small></div></div>
+      </div>
+      <div class="res-status ok" id="resStatus"></div>
+      <div class="res-grid">
+        <div><b>ФИ учащегося</b><span id="rFio"></span></div>
+        <div><b>Группа</b><span id="rGrp"></span></div>
+        <div><b>Вариант</b><span id="rVar"></span></div>
+        <div><b>Попыток использовано</b><span id="rAtt"></span></div>
+      </div>
+      <p class="dots-lab">Ход теста</p>
+      <div class="dots" id="rDots"></div>
+      <p class="sheet-note" id="sheetNote"></p>
+      <button class="btn ready" id="againBtn" type="button">Пройти заново</button>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══════════ ПРЕДУПРЕЖДЕНИЕ АНТИЧИТА ═══════════ -->
+<div id="warn">
+  <div class="warn-card">
+    <span class="ic">⚠️</span>
+    <h3>Нарушение №1 зафиксировано</h3>
+    <p>Обнаружено сворачивание окна или переключение приложения.<br><br>
+    При <b>повторном</b> нарушении тест будет завершён автоматически, попытка будет засчитана.</p>
+    <button class="btn ready" id="warnOk" type="button">Понял(а), продолжить</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ══════════════════════════════════════════════════════════════
+   НАСТРОЙКА: вставьте сюда URL веб-приложения Google Apps Script
+   (Deploy → Web app → URL). Пока стоит заглушка — отправка в лист
+   не выполняется, тест работает полностью автономно.
+═══════════════════════════════════════════════════════════════ */
+const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbwJM2FcZkmwD89nmxCSOalXBQdaXBtAxUeZEdQtM7PO0DbLAYsr5GTlIpAieAgHSaxUig/exec';
+
+const $ = s => document.querySelector(s);
+const TOTAL_MS = 90_000;               // 1,5 минуты на вопрос
+const CIRC_T = 163.4, CIRC_R = 339.3;
+const KEYS = ['А','Б','В','Г'];
+
+const state = {fio:'', group:'', variant:1, qs:[], idx:0, ans:Array(10).fill(null), attempt:0, finished:false};
+
+/* ───────────── Хранилище попыток (устойчиво к приватному режиму) ───────────── */
+const memStore = {};
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch{ return memStore[k] ?? null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch{ memStore[k] = v; } }
+};
+const AKEY = 'fiztest_attempts_v1';
+const attKey = () => (state.fio + '|' + state.group).trim().toLowerCase();
+function attMap(){ try{ return JSON.parse(store.get(AKEY)) || {}; }catch{ return {}; } }
+function attUsed(){ return attMap()[attKey()] || 0; }
+function bumpAttempt(){ const m = attMap(); const k = attKey(); m[k] = (m[k]||0)+1; store.set(AKEY, JSON.stringify(m)); return m[k]; }
+
+/* ───────────── Навигация экранов ───────────── */
+const screens = {start:$('#scr-start'), rules:$('#scr-rules'), quiz:$('#scr-quiz'), res:$('#scr-res')};
+function show(name){
+  Object.values(screens).forEach(s => s.classList.remove('on'));
+  screens[name].classList.add('on');
+  window.scrollTo({top:0});
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SVG-ГРАФИКИ: сетка «в клетку», пронумерованные оси, подписи величин
+═══════════════════════════════════════════════════════════════ */
+let UID = 0;
+const AX = '#6f83ad';
+const fmtN = n => String(n).replace('.', ',');
+const marker = (id,c) => `<marker id="${id}" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="${c}"/></marker>`;
+
+function graphSVG({pts, px, py, nx, ny, xl, yl, c}){
+  const id = ++UID, cell = 24, ox = 42, padT = 34, padR = 30, padB = 36;
+  const W = ox + nx*cell + padR, H = padT + ny*cell + padB, oy = H - padB;
+  const X = u => ox + u*cell/px, Y = u => oy - u*cell/py;
+  let g = '';
+  for(let i=0;i<=nx;i++){ const x = ox+i*cell; g += `<line x1="${x}" y1="${padT-8}" x2="${x}" y2="${oy}" class="gl"/>`; }
+  for(let j=0;j<=ny;j++){ const y = oy-j*cell; g += `<line x1="${ox}" y1="${y}" x2="${W-14}" y2="${y}" class="gl"/>`; }
+  let t = `<text x="${ox-8}" y="${oy+16}" text-anchor="end" class="tick">0</text>`;
+  for(let i=1;i<=nx;i++) t += `<text x="${ox+i*cell}" y="${oy+16}" text-anchor="middle" class="tick">${fmtN(i*px)}</text>`;
+  for(let j=1;j<=ny;j++) t += `<text x="${ox-8}" y="${oy-j*cell+4}" text-anchor="end" class="tick">${fmtN(j*py)}</text>`;
+  const p = pts.map(([x,y]) => `${X(x)},${Y(y)}`).join(' ');
+  return `<svg viewBox="0 0 ${W} ${H}" class="qsvg" role="img">
+    <defs>${marker('g'+id, AX)}</defs>${g}
+    <line x1="${ox}" y1="${oy}" x2="${W-16}" y2="${oy}" stroke="${AX}" stroke-width="1.5" marker-end="url(#g${id})"/>
+    <line x1="${ox}" y1="${oy}" x2="${ox}" y2="${padT-14}" stroke="${AX}" stroke-width="1.5" marker-end="url(#g${id})"/>
+    ${t}
+    <text x="${W-16}" y="${oy-10}" text-anchor="end" class="axl">${xl}</text>
+    <text x="${ox+10}" y="${padT-12}" class="axl">${yl}</text>
+    <polyline points="${p}" fill="none" stroke="${c}" stroke-width="8" opacity=".15" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="${p}" fill="none" stroke="${c}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+function forceSVG(fx, fy){
+  const id = ++UID, cell = 24, ox = 42, padT = 34, padB = 40;
+  const nx = Math.max(fx,4)+1, ny = Math.max(fy,4)+1;
+  const W = ox + nx*cell + 30, H = padT + ny*cell + padB, oy = H - padB;
+  let g = '';
+  for(let i=0;i<=nx;i++){ const x = ox+i*cell; g += `<line x1="${x}" y1="${padT-8}" x2="${x}" y2="${oy}" class="gl"/>`; }
+  for(let j=0;j<=ny;j++){ const y = oy-j*cell; g += `<line x1="${ox}" y1="${y}" x2="${W-14}" y2="${y}" class="gl"/>`; }
+  let t = `<text x="${ox-8}" y="${oy+16}" text-anchor="end" class="tick">0</text>`;
+  for(let i=1;i<=nx;i++) t += `<text x="${ox+i*cell}" y="${oy+16}" text-anchor="middle" class="tick">${i}</text>`;
+  for(let j=1;j<=ny;j++) t += `<text x="${ox-8}" y="${oy-j*cell+4}" text-anchor="end" class="tick">${j}</text>`;
+  const x2 = ox + fx*cell, y2 = oy - fy*cell;
+  return `<svg viewBox="0 0 ${W} ${H}" class="qsvg" role="img">
+    <defs>${marker('f1'+id,'#00e5ff')}${marker('f2'+id,'#ff2ec4')}${marker('f3'+id,'#ffb454')}${marker('f4'+id,AX)}</defs>
+    ${g}
+    <line x1="${ox}" y1="${oy}" x2="${W-16}" y2="${oy}" stroke="${AX}" stroke-width="1.4" marker-end="url(#f4${id})"/>
+    <line x1="${ox}" y1="${oy}" x2="${ox}" y2="${padT-14}" stroke="${AX}" stroke-width="1.4" marker-end="url(#f4${id})"/>
+    ${t}
+    <text x="${W-16}" y="${oy-10}" text-anchor="end" class="axl">x</text>
+    <text x="${ox+10}" y="${padT-12}" class="axl">y</text>
+    <line x1="${ox}" y1="${oy}" x2="${x2}" y2="${oy}" stroke="#00e5ff" stroke-width="3" marker-end="url(#f1${id})"/>
+    <line x1="${ox}" y1="${oy}" x2="${ox}" y2="${y2}" stroke="#ff2ec4" stroke-width="3" marker-end="url(#f2${id})"/>
+    <line x1="${ox}" y1="${oy}" x2="${x2}" y2="${y2}" stroke="#ffb454" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#f3${id})"/>
+    <text x="${x2-6}" y="${oy-10}" text-anchor="end" class="vl" fill="#00e5ff">F₁ = ${fx} Н</text>
+    <text x="${ox+10}" y="${y2+16}" class="vl" fill="#ff2ec4">F₂ = ${fy} Н</text>
+    <text x="${x2+8}" y="${y2-8}" class="vl" fill="#ffb454">F — ?</text>
+    <text x="${W-16}" y="${H-10}" text-anchor="end" class="dim">1 клетка = 1 Н</text>
+  </svg>`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   БАНК ВОПРОСОВ · ВАРИАНТ 1 и ВАРИАНТ 2
+═══════════════════════════════════════════════════════════════ */
+const BANK = {
+ 1: [
+  {t:'mc', q:'Две силы <i>F₁ = 3 Н</i> и <i>F₂ = 4 Н</i> направлены под прямым углом друг к другу (см. схему). Чему равен модуль равнодействующей силы?',
+   svg:() => forceSVG(3,4), o:['5 Н','7 Н','1 Н','12 Н'], a:'5 Н'},
+  {t:'mc', q:'По какой формуле определяется равнодействующая <i>F</i> двух сил <i>F₁</i> и <i>F₂</i>, направленных под углом <i>α</i> друг к другу?',
+   o:['F = √(F₁² + F₂² + 2·F₁·F₂·cos α)','F = F₁ + F₂·sin α','F = F₁² + F₂² − 2·F₁·F₂','F = (F₁ + F₂)·cos α'],
+   a:'F = √(F₁² + F₂² + 2·F₁·F₂·cos α)'},
+  {t:'mc', q:'На графике показана зависимость проекции скорости <i>vₓ</i> от времени <i>t</i>. Какое движение совершает тело?',
+   svg:() => graphSVG({pts:[[0,20],[4,0]], px:1, py:5, nx:5, ny:5, xl:'t, с', yl:'v, м/с', c:'#00e5ff'}),
+   o:['Равнозамедленное','Равномерное','Равноускоренное','Тело покоится'], a:'Равнозамедленное'},
+  {t:'mc', q:'Координата тела меняется со временем по закону <i>x = 5 + 2t − t²</i> (все величины в СИ). Определите начальную скорость <i>v₀</i> и ускорение <i>a</i> тела.',
+   o:['v₀ = 2 м/с; a = −2 м/с²','v₀ = 2 м/с; a = −1 м/с²','v₀ = 5 м/с; a = −2 м/с²','v₀ = −1 м/с; a = 2 м/с²'],
+   a:'v₀ = 2 м/с; a = −2 м/с²'},
+  {t:'mc', q:'Тело брошено вертикально вверх. Чему равно его ускорение в высшей точке траектории (сопротивление воздуха не учитывать)?',
+   o:['Равно g и направлено вниз','Равно нулю','Равно g и направлено вверх','Зависит от начальной скорости тела'],
+   a:'Равно g и направлено вниз'},
+  {t:'mc', q:'На графике показана зависимость координаты <i>x</i> тела от времени <i>t</i>. Чему равна проекция скорости <i>vₓ</i> тела?',
+   svg:() => graphSVG({pts:[[0,0],[4,20]], px:1, py:5, nx:5, ny:5, xl:'t, с', yl:'x, м', c:'#ff2ec4'}),
+   o:['5 м/с','4 м/с','20 м/с','0,5 м/с'], a:'5 м/с'},
+  {t:'num', q:'Тело свободно падает с высоты <i>45 м</i> без начальной скорости. Найдите скорость тела у поверхности Земли. Ответ запишите в м/с (<i>g = 10 м/с²</i>).', a:30},
+  {t:'num', q:'Камень брошен вертикально вверх со скоростью <i>20 м/с</i>. Найдите максимальную высоту подъёма камня. Ответ запишите в метрах (<i>g = 10 м/с²</i>).', a:20},
+  {t:'num', q:'Тело брошено вертикально вверх со скоростью <i>30 м/с</i>. На какой высоте окажется тело через <i>2 с</i> после начала движения? Ответ запишите в метрах (<i>g = 10 м/с²</i>).', a:40},
+  {t:'num', q:'Кирпич свободно упал с крыши дома (без начальной скорости) и достиг земли через <i>3 с</i>. Определите высоту здания. Ответ запишите в метрах (<i>g = 10 м/с²</i>).', a:45}
+ ],
+ 2: [
+  {t:'mc', q:'Две силы <i>F₁ = 6 Н</i> и <i>F₂ = 8 Н</i> направлены под прямым углом друг к другу (см. схему). Чему равен модуль равнодействующей силы?',
+   svg:() => forceSVG(6,8), o:['10 Н','14 Н','2 Н','48 Н'], a:'10 Н'},
+  {t:'mc', q:'Две силы <i>F₁</i> и <i>F₂</i> направлены вдоль одной прямой в одну сторону. Чему равна их равнодействующая <i>F</i>?',
+   o:['F = F₁ + F₂','F = F₁ − F₂','F = √(F₁² + F₂²)','F = F₁·F₂ / (F₁ + F₂)'], a:'F = F₁ + F₂'},
+  {t:'mc', q:'На графике показана зависимость проекции скорости <i>vₓ</i> от времени <i>t</i>. Какое движение совершает тело?',
+   svg:() => graphSVG({pts:[[0,15],[5,15]], px:1, py:5, nx:6, ny:4, xl:'t, с', yl:'v, м/с', c:'#00e5ff'}),
+   o:['Равномерное','Равноускоренное','Равнозамедленное','Тело покоится'], a:'Равномерное'},
+  {t:'mc', q:'Координата тела меняется со временем по закону <i>x = 2 + 4t + t²</i> (все величины в СИ). Определите начальную скорость <i>v₀</i> и ускорение <i>a</i> тела.',
+   o:['v₀ = 4 м/с; a = 2 м/с²','v₀ = 4 м/с; a = 1 м/с²','v₀ = 2 м/с; a = 4 м/с²','v₀ = 4 м/с; a = −2 м/с²'],
+   a:'v₀ = 4 м/с; a = 2 м/с²'},
+  {t:'mc', q:'Камень брошен вертикально вверх. Чему равна его скорость в высшей точке подъёма (в точке «поворота»)?',
+   o:['0','Равна g','Равна начальной скорости','Зависит от массы камня'], a:'0'},
+  {t:'mc', q:'На графике показана зависимость координаты <i>x</i> тела от времени <i>t</i>. Чему равна проекция скорости <i>vₓ</i> тела?',
+   svg:() => graphSVG({pts:[[0,0],[5,10]], px:1, py:2, nx:6, ny:6, xl:'t, с', yl:'x, м', c:'#ff2ec4'}),
+   o:['2 м/с','5 м/с','10 м/с','0,4 м/с'], a:'2 м/с'},
+  {t:'num', q:'Тело свободно падает с высоты <i>80 м</i> без начальной скорости. Найдите скорость тела у поверхности Земли. Ответ запишите в м/с (<i>g = 10 м/с²</i>).', a:40},
+  {t:'num', q:'Камень брошен вертикально вверх со скоростью <i>40 м/с</i>. Найдите максимальную высоту подъёма камня. Ответ запишите в метрах (<i>g = 10 м/с²</i>).', a:80},
+  {t:'num', q:'Тело брошено вертикально вверх со скоростью <i>20 м/с</i>. На какой высоте окажется тело через <i>1 с</i> после начала движения? Ответ запишите в метрах (<i>g = 10 м/с²</i>).', a:15},
+  {t:'num', q:'Мяч свободно упал с балкона (без начальной скорости) и достиг земли через <i>2 с</i>. Определите высоту здания. Ответ запишите в метрах (<i>g = 10 м/с²</i>).', a:20}
+ ]
+};
+
+const shuffle = a => { const b=[...a]; for(let i=b.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [b[i],b[j]]=[b[j],b[i]]; } return b; };
+
+/* ══════════════════════════════════════════════════════════════
+   ЭКРАН 1 → ЭКРАН 2
+═══════════════════════════════════════════════════════════════ */
+function updateAttLabel(){ $('#attStart').innerHTML = `Использовано попыток: <b>${attUsed()}</b>`; }
+$('#fio').addEventListener('input', () => { $('#fioErr').classList.remove('on'); updateAttLabel(); });
+$('#group').addEventListener('change', updateAttLabel);
+
+$('#toRules').addEventListener('click', () => {
+  const v = $('#fio').value.trim().replace(/\s+/g,' ');
+  if(v.length < 3 || !/\p{L}/u.test(v)){ $('#fioErr').classList.add('on'); $('#fio').focus(); return; }
+  state.fio = v; state.group = $('#group').value; state.variant = +$('#variant').value;
+  $('#rulesChips').innerHTML =
+    `<span class="chip">${state.fio}</span><span class="chip m">${state.group}</span><span class="chip">Вариант ${state.variant}</span>`;
+  $('#rulesAtt').innerHTML = `Использовано попыток: <b>${attUsed()}</b>`;
+  show('rules');
+});
+
+$('#agree').addEventListener('change', e => { $('#startQuiz').disabled = !e.target.checked; });
+
+/* ══════════════════════════════════════════════════════════════
+   ЗАПУСК ТЕСТА
+═══════════════════════════════════════════════════════════════ */
+$('#startQuiz').addEventListener('click', () => {
+  state.attempt = bumpAttempt();                                   // попытка засчитана
+  state.qs = BANK[state.variant].map(q => q.t === 'mc' ? {...q, os: shuffle(q.o)} : {...q});
+  state.idx = 0; state.ans = Array(10).fill(null); state.finished = false;
+  const cells = $('#cells'); cells.innerHTML = '';
+  for(let i=0;i<10;i++){ const s = document.createElement('span'); s.className = 'cell'; cells.appendChild(s); }
+  $('#qMeta').textContent = `${state.group} · Вариант ${state.variant}`;
+  show('quiz');
+  renderQ();
+  AC.start();
+});
+
+/* ══════════════════════════════════════════════════════════════
+   ОТРИСОВКА ВОПРОСА
+═══════════════════════════════════════════════════════════════ */
+function arm(on){
+  const b = $('#nextBtn');
+  b.disabled = !on; b.classList.toggle('ready', on);
+  const c = document.querySelectorAll('#cells .cell')[state.idx];
+  if(c) c.classList.toggle('done', on || state.ans[state.idx] !== null);
+}
+
+function renderQ(){
+  const q = state.qs[state.idx];
+  $('#qNow').textContent = state.idx + 1;
+  $('#qTag').textContent = q.t === 'mc' ? 'Тест' : 'Расчётная задача';
+  $('#qText').innerHTML = q.q;
+  $('#qSvg').innerHTML = q.svg ? q.svg() : '';
+  const body = $('#qBody'); body.innerHTML = '';
+
+  if(q.t === 'mc'){
+    const wrap = document.createElement('div'); wrap.className = 'opts';
+    q.os.forEach((o,i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'opt';
+      b.innerHTML = `<span class="key">${KEYS[i]}</span><span class="txt">${o}</span>`;
+      b.addEventListener('click', () => {
+        wrap.querySelectorAll('.opt').forEach(x => x.classList.remove('sel'));
+        b.classList.add('sel');
+        state.ans[state.idx] = o;
+        arm(true);
+      });
+      wrap.appendChild(b);
+    });
+    body.appendChild(wrap);
+  } else {
+    body.innerHTML = `<label class="alab">Ответ — только число, без единиц</label>
+      <div class="numwrap">
+        <input id="numIn" class="num-input" inputmode="decimal" autocomplete="off" autocorrect="off"
+               placeholder="0" enterkeyhint="done">
+        <span class="unit-note">например: 25</span>
+      </div>`;
+    const inp = $('#numIn');
+    inp.addEventListener('input', () => {
+      const v = inp.value.trim();
+      state.ans[state.idx] = v || null;
+      arm(v !== '');
+    });
+    inp.addEventListener('keydown', e => { if(e.key === 'Enter' && !$('#nextBtn').disabled) next(); });
+  }
+
+  arm(false);
+  $('#nextBtn').textContent = state.idx === 9 ? 'Завершить тест' : 'Далее';
+  document.querySelectorAll('#cells .cell').forEach((c,i) => {
+    c.classList.toggle('cur', i === state.idx);
+    c.classList.toggle('done', state.ans[i] !== null);
+  });
+  const card = $('#qCard');
+  card.classList.remove('in'); void card.offsetWidth; card.classList.add('in');
+  startTimer();
+}
+
+function next(){
+  if(state.finished) return;
+  stopTimer();
+  state.idx++;
+  if(state.idx > 9) finish('Тест завершён');
+  else renderQ();
+}
+$('#nextBtn').addEventListener('click', next);
+
+/* ══════════════════════════════════════════════════════════════
+   ТАЙМЕР · 90 секунд на вопрос
+═══════════════════════════════════════════════════════════════ */
+let tInt = null, remain = TOTAL_MS, lastT = 0;
+function paintTimer(){
+  const s = Math.max(0, Math.ceil(remain/1000));
+  $('#trNum').textContent = s;
+  $('#trFg').style.strokeDashoffset = String(CIRC_T * (1 - remain/TOTAL_MS));
+  const box = $('#tBox');
+  box.classList.toggle('warn', s <= 30 && s > 10);
+  box.classList.toggle('danger', s <= 10);
+}
+function tick(){
+  const n = performance.now();
+  remain -= n - lastT; lastT = n;
+  if(remain <= 0){
+    remain = 0; paintTimer(); stopTimer();
+    toast('⏱ Время вышло');
+    setTimeout(() => { if(!AC.warnOpen && !state.finished) next(); }, 700);
+    return;
+  }
+  paintTimer();
+}
+function startTimer(){ stopTimer(); remain = TOTAL_MS; lastT = performance.now(); paintTimer(); tInt = setInterval(tick, 200); }
+function stopTimer(){ if(tInt){ clearInterval(tInt); tInt = null; } }
+function pauseTimer(){ stopTimer(); }
+function resumeTimer(){ lastT = performance.now(); tInt = setInterval(tick, 200); }
+
+let toastT = null;
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 1500);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   АНТИЧИТ
+   • 1-е нарушение → предупреждение (таймер на паузе)
+   • 2-е нарушение → тест завершается, попытка засчитана
+   • НЕ срабатывает на выдвижение цифровой клавиатуры (расчётные задачи)
+   • Дебаунс 400–450 мс + грейс-период → нет ложных срабатываний на iPhone
+═══════════════════════════════════════════════════════════════ */
+const AC = {
+  active:false, warnOpen:false, strikes:0, graceUntil:0,
+  start(){ this.active = true; this.warnOpen = false; this.strikes = 0; this.graceUntil = Date.now() + 1200; },
+  stop(){ this.active = false; this.warnOpen = false; },
+  keyboard(){ // открыта ли виртуальная клавиатура / фокус в поле ввода
+    const ae = document.activeElement;
+    const ed = ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable);
+    let sh = false;
+    if(window.visualViewport) sh = window.visualViewport.height < window.innerHeight * 0.75;
+    return ed || sh;
+  },
+  strike(){
+    if(!this.active || this.warnOpen || Date.now() < this.graceUntil) return;
+    this.strikes++;
+    if(this.strikes === 1){
+      this.warnOpen = true;
+      pauseTimer();
+      $('#warn').classList.add('on');
+    } else {
+      finish('Завершён античитом: повторное нарушение');
+    }
+  }
+};
+
+/* Сворачивание вкладки / уход в фон (с дебаунсом — фикс ложных срабатываний iOS) */
+document.addEventListener('visibilitychange', () => {
+  if(!AC.active || !document.hidden) return;
+  setTimeout(() => { if(document.hidden && AC.active && !AC.warnOpen) AC.strike(); }, 400);
+});
+
+/* Потеря фокуса окна: Samsung-панель поверх, Alt+Tab и т.п.
+   Игнорируем, если фокус быстро вернулся или открыта клавиатура */
+window.addEventListener('blur', () => {
+  if(!AC.active || AC.warnOpen) return;
+  setTimeout(() => {
+    if(!AC.active || AC.warnOpen) return;
+    if(document.hasFocus()) return;   // мимолётная потеря фокуса (клавиатура и т.п.)
+    if(AC.keyboard()) return;         // цифровая клавиатура в расчётной задаче
+    AC.strike();
+  }, 450);
+});
+
+/* Полное закрытие/покидание страницы — фиксируем в журнал */
+window.addEventListener('pagehide', e => {
+  if(AC.active && !e.persisted){ AC.stop(); beacon('Покинут тест (страница закрыта)'); }
+});
+window.addEventListener('freeze', () => { if(AC.active){ AC.stop(); beacon('Покинут тест (заморозка вкладки)'); } });
+
+$('#warnOk').addEventListener('click', () => {
+  $('#warn').classList.remove('on');
+  AC.warnOpen = false;
+  AC.graceUntil = Date.now() + 600;
+  resumeTimer();
+});
+
+/* ══════════════════════════════════════════════════════════════
+   ОЦЕНКА И ЗАВЕРШЕНИЕ
+═══════════════════════════════════════════════════════════════ */
+function grade(){
+  let score = 0;
+  const marks = state.qs.map((q,i) => {
+    const given = state.ans[i];
+    let ok = false;
+    if(q.t === 'mc'){ ok = given === q.a; }
+    else{
+      const x = parseFloat(String(given ?? '').replace(',', '.').trim());
+      ok = Number.isFinite(x) && Math.abs(x - q.a) < 0.011;
+    }
+    if(ok) score++;
+    return ok ? '+' : '−';
+  });
+  return {score, marks: marks.join(' ')};
+}
+
+function finish(status){
+  if(state.finished) return;
+  state.finished = true;
+  stopTimer(); AC.stop();
+  const {score, marks} = grade();
+  showResults(score, marks, status);
+  show('res');
+  sendToSheets({score, answers: marks, status});
+}
+
+function showResults(score, marks, status){
+  $('#rFio').textContent = state.fio;
+  $('#rGrp').textContent = state.group;
+  $('#rVar').textContent = 'Вариант ' + state.variant;
+  $('#rAtt').textContent = state.attempt;
+
+  const st = $('#resStatus');
+  const bad = status !== 'Тест завершён';
+  st.className = 'res-status ' + (bad ? 'bad' : 'ok');
+  st.textContent = bad
+    ? '⛔ ' + status + '. Баллы сохранены за отвеченные вопросы.'
+    : '✓ Тест завершён. Максимальный балл — 10.';
+
+  const dots = $('#rDots'); dots.innerHTML = '';
+  marks.split(' ').forEach(m => {
+    const d = document.createElement('span');
+    d.className = 'dot ' + (m === '+' ? 'ok' : 'bad');
+    dots.appendChild(d);
+  });
+
+  countUp($('#scoreNum'), score);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    $('#rgFg').style.strokeDashoffset = String(CIRC_R * (1 - score/10));
+  }));
+}
+
+function countUp(el, to){
+  const t0 = performance.now(), d = 950;
+  const f = n => {
+    const k = Math.min(1, (n - t0)/d);
+    el.textContent = Math.round(to * (1 - Math.pow(1-k, 3)));
+    if(k < 1) requestAnimationFrame(f);
+  };
+  requestAnimationFrame(f);
+}
+
+$('#againBtn').addEventListener('click', () => { updateAttLabel(); show('start'); });
+
+/* ══════════════════════════════════════════════════════════════
+   ОТПРАВКА В GOOGLE SHEETS
+═══════════════════════════════════════════════════════════════ */
+const urlReady = () => SHEETS_WEBAPP_URL && !/ВСТАВЬТЕ/.test(SHEETS_WEBAPP_URL);
+
+async function sendToSheets({score, answers, status}){
+  const note = $('#sheetNote');
+  const data = {
+    fio: state.fio, group: state.group, variant: 'Вариант ' + state.variant,
+    score, max: 10, attempt: state.attempt, status, answers
+  };
+  if(!urlReady()){
+    note.textContent = '⚠ Google Sheets не подключён: вставьте URL веб-приложения в константу SHEETS_WEBAPP_URL.';
+    note.className = 'sheet-note wn';
+    return;
+  }
+  try{
+    await fetch(SHEETS_WEBAPP_URL, {method:'POST', mode:'no-cors', body:new URLSearchParams(data)});
+    note.textContent = '✓ Результат отправлен в Google Sheets';
+    note.className = 'sheet-note ok';
+  }catch(e){
+    note.textContent = '⚠ Не удалось отправить результат (проверьте сеть)';
+    note.className = 'sheet-note wn';
+  }
+}
+
+function beacon(status){
+  if(!urlReady()) return;
+  const {score, marks} = state.qs.length ? grade() : {score:0, marks:''};
+  const data = new URLSearchParams({
+    fio: state.fio, group: state.group, variant: 'Вариант ' + state.variant,
+    score, max: 10, attempt: state.attempt, status, answers: marks
+  });
+  try{
+    if(navigator.sendBeacon) navigator.sendBeacon(SHEETS_WEBAPP_URL, data);
+    else fetch(SHEETS_WEBAPP_URL, {method:'POST', mode:'no-cors', keepalive:true, body:data});
+  }catch(e){/* тихо */}
+}
+
+updateAttLabel();
+</script>
+</body>
+</html>
